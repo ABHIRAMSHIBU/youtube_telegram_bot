@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import os
 
 from telegram import Update
@@ -10,44 +9,54 @@ from config import TOKEN
 from yt_downloader import YT_DLP_Downloader
 
 
-async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text(f'Hello {update.effective_user.first_name}')
+class BotHandlers:
 
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text(f'/hello\n/help')
+    async def hello(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        await update.message.reply_text(f'Hello {update.effective_user.first_name}')
 
-async def download_upload_audio(update: Update, context: ContextTypes.DEFAULT_TYPE, url: str) -> None:
-    # Download the video
-    yt_downloader = YT_DLP_Downloader()
-    yt_downloader.setUrl(url)
-    output_file = yt_downloader.download_audio()
+    async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        await update.message.reply_text(f'/hello\n/help')
 
-    if(output_file == None):
-        await update.message.reply_text("Error downloading video")
-        return
+    async def download_upload_audio(self, update: Update, context: ContextTypes.DEFAULT_TYPE, url: str) -> None:
+        # Download the video
+        yt_downloader = YT_DLP_Downloader()
+        yt_downloader.setUrl(url)
+        output_file = yt_downloader.download_audio()
 
-    await update.message.reply_document(document=open(output_file, 'rb'))
+        if(output_file == None):
+            await update.message.reply_text("Error downloading video")
+            return
 
-    os.remove(output_file)
+        await update.message.reply_document(document=open(output_file, 'rb'))
 
-async def download(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    # Get the download link from the message
-    message = update.message.text
-    url = message.replace('/download ', '')
+        os.remove(output_file)
 
-    context.application.create_task(download_upload_audio(update, context, url))
-    await update.message.reply_text("Downloading and uploading video...")
+    async def download(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        # Get the download link from the message
+        message = update.message.text
+        url = message.replace('/download ', '')
 
-async def message_handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(update.message.text)
+        context.application.create_task(self.download_upload_audio(update, context, url))
+        await update.message.reply_text("Downloading and uploading video...")
+
+    async def message_handle(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        await update.message.reply_text(update.message.text)
+
+class BotApp:
+    def __init__(self):
+        self.app = ApplicationBuilder().token(TOKEN).build()
+        self.handlers = BotHandlers()
+
+        self.app.add_handler(CommandHandler("hello", self.handlers.hello))
+        self.app.add_handler(CommandHandler("help", self.handlers.help_command))
+        self.app.add_handler(CommandHandler("download", self.handlers.download))
+        self.app.add_handler(MessageHandler(TEXT, self.handlers.message_handle))
 
 
-app = ApplicationBuilder().token(TOKEN).build()
-
-app.add_handler(CommandHandler("hello", hello))
-app.add_handler(CommandHandler("help", help_command))
-app.add_handler(CommandHandler("download", download))
-app.add_handler(MessageHandler(TEXT, message_handle))
+    def run(self):
+        self.app.run_polling()
 
 
-app.run_polling()
+
+bot_app = BotApp()
+bot_app.run()
