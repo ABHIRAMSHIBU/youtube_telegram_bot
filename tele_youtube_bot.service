@@ -1,0 +1,18 @@
+[Unit]
+Description=Telegram Youtube Bot Service
+After=network.target
+
+[Service]
+User=abhiram
+WorkingDirectory=/home/abhiram/projects/youtube_bot
+Environment="PATH=/home/abhiram/projects/youtube_bot/.venv/bin:$PATH"
+ExecStart=/home/abhiram/projects/youtube_bot/.venv/bin/python bot.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+
+[Install]
+WantedBy=multi-user.target
+

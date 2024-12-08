@@ -39,7 +39,7 @@ class YT_DLP_Downloader(YT_Downloader):
             os.chdir(self.temp_dir)
 
             executor = Executor()
-            executor.execute(f'yt-dlp -f {self.video}+{self.audio} {self.url}')
+            executor.execute(f'/usr/bin/yt-dlp -f {self.video}+{self.audio} {self.url}')
             executor.join()
             # Print stdout and stderr
             print(executor.get_output().decode())
@@ -66,7 +66,7 @@ class YT_DLP_Downloader(YT_Downloader):
             os.chdir(self.temp_dir)
 
             executor = Executor()
-            executor.execute(f'yt-dlp --no-playlist -f {self.audio} {self.url}')
+            executor.execute(f'/usr/bin/yt-dlp --no-playlist -f {self.audio} {self.url}')
             executor.join()
             # Print stdout and stderr
             print(executor.get_output().decode())
